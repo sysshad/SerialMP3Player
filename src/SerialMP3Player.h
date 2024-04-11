@@ -101,7 +101,7 @@ class SerialMP3Player{
      String sbyte2hex(byte b);
      bool _showDebugMessages;
      SoftwareSerial *Serial3;
-     byte ansbuf[15] = {0}; // Buffer for the answers.
+     byte ansbuf[36] = {0}; // Buffer for the answers.
 
 };
 
