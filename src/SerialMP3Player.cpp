@@ -162,10 +162,7 @@ void SerialMP3Player::sendCommand(byte command, byte dat1, byte dat2){
 
   // Command Structure 0x7E 0xFF 0x06 CMD FBACK DAT1 DAT2 0xEF
 
-  #ifndef NO_SERIALMP3_DELAY
   delay(20);
-  #endif
-
   Send_buf[0] = 0x7E;    // Start byte
   Send_buf[1] = 0xFF;    // Version
   Send_buf[2] = 0x06;    // Command length not including Start and End byte.
@@ -185,10 +182,7 @@ void SerialMP3Player::sendCommand(byte command, byte dat1, byte dat2){
      Serial.println(mp3send); // watch what are we sending
   }
 
-  #ifndef NO_SERIALMP3_DELAY
-  delay(1000);
-  // Wait between sending commands.
-  #endif
+  delay(1000);  // Wait between sending commands.
 }
 
 //String sanswer(void);
@@ -200,13 +194,13 @@ String SerialMP3Player::decodeMP3Answer(){
   //
   // RSP Response code
   // DAT Response additional data
-
+  
   String decodedMP3Answer="";
 
    decodedMP3Answer=sanswer();
 
-     switch (ansbuf[3])
-     {
+  
+  switch (ansbuf[3]) {
     case 0x3A:
       decodedMP3Answer += " -> Memory card inserted.";
       break;
@@ -228,6 +222,7 @@ String SerialMP3Player::decodeMP3Answer(){
         case 0: decodedMP3Answer += " -> Status: stopped"; break;
         case 1: decodedMP3Answer += " -> Status: playing"; break;
         case 2: decodedMP3Answer += " -> Status: paused"; break;
+        default: decodedMP3Answer += " -> Status: unknown"; break;
       }
       break;
 
@@ -238,7 +233,6 @@ String SerialMP3Player::decodeMP3Answer(){
     case 0x48:
       decodedMP3Answer += " -> File count: " + String(ansbuf[6], DEC);
       break;
-
 
     case 0x4C:
       decodedMP3Answer += " -> Playing: " + String(ansbuf[6], DEC);
@@ -251,11 +245,13 @@ String SerialMP3Player::decodeMP3Answer(){
     case 0x4F:
       decodedMP3Answer += " -> Folder count: " + String(ansbuf[6], DEC);
       break;
-     }
-
-
-   ansbuf[3] = 0; // Clear ansbuff.
-   return decodedMP3Answer;
+  
+    default:
+      decodedMP3Answer += " -> Unrecognized response";
+      break;
+  }
+  ansbuf[3] = 0; // Clear ansbuff.
+  return decodedMP3Answer;
 }
 
 
@@ -302,27 +298,33 @@ String SerialMP3Player::sanswer(void){
   //
   //  read while something readed and it's not the end "0xEF"
 
-
   byte b;
   String mp3answer="";                // Answer from the Serial3.
   int iansbuf = 0;
 
-  if (Serial3->available()){
-   do{
-    b = Serial3->read();
+  // DEBUG data recieved:
+  //Serial.println("");Serial.print("START: ");
 
-    if(b == 0x7E){  // if there are "0x7E" it's a beginning.
-      iansbuf=0;    //  ansbuf index to zero.
-      mp3answer="";
-    }
+  if (Serial3->available()) {
+    do {
+        b = Serial3->read();
+        if(b == 0x7E) {  // if there are "0x7E" it's a beginning.
+        iansbuf=0;    //  ansbuf index to zero.
+        mp3answer="";
+        }
 
-    ansbuf[iansbuf] = b;
-    mp3answer+=sbyte2hex(ansbuf[iansbuf]);
-    iansbuf++; //  increase this index.
+        ansbuf[iansbuf] = b;
+        mp3answer+=sbyte2hex(ansbuf[iansbuf]);
 
-   }while(b != 0xEF);
-   // while there are something to read and it's not the end "0xEF"
+        // DEBUG data recieved:
+        //Serial.print(b,HEX);Serial.print(',');
+        iansbuf++; //  increase this index.
+    } while(b != 0xEF);
+  // while there are something to read and it's not the end "0xEF"
 
+  // DEBUG data recieved:
+  Serial.println(": END");
   }
+
   return mp3answer;
  }
