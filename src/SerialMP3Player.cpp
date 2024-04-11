@@ -228,6 +228,7 @@ String SerialMP3Player::decodeMP3Answer(){
         case 0: decodedMP3Answer += " -> Status: stopped"; break;
         case 1: decodedMP3Answer += " -> Status: playing"; break;
         case 2: decodedMP3Answer += " -> Status: paused"; break;
+        default: decodedMP3Answer += " -> Status: unknown"; break;
       }
       break;
 
@@ -238,7 +239,6 @@ String SerialMP3Player::decodeMP3Answer(){
     case 0x48:
       decodedMP3Answer += " -> File count: " + String(ansbuf[6], DEC);
       break;
-
 
     case 0x4C:
       decodedMP3Answer += " -> Playing: " + String(ansbuf[6], DEC);
@@ -251,8 +251,11 @@ String SerialMP3Player::decodeMP3Answer(){
     case 0x4F:
       decodedMP3Answer += " -> Folder count: " + String(ansbuf[6], DEC);
       break;
-     }
 
+    default:
+      decodedMP3Answer += " -> Unrecognized response";
+      break;        
+     }
 
    ansbuf[3] = 0; // Clear ansbuff.
    return decodedMP3Answer;
